@@ -1,1 +1,107 @@
 name: "MLPNet"
+layer {
+  name: "mlp_net"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    scale: 0.00390625
+  }
+  data_param {
+    source: "mnist_train_lmdb"
+    batch_size: 64
+    backend: LMDB
+  }
+}
+layer {
+  name: "mlp_net"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    scale: 0.00390625
+  }
+  data_param {
+    source: "mnist_test_lmdb"
+    batch_size: 100
+    backend: LMDB
+  }
+}
+
+layer {
+    name: "input1"
+    type: "InnerProduct"
+    bottom: "data"
+    top: "input1"
+    inner_product_param {
+        num_output: 50
+        weight_filler {
+            type: "xavier"
+            std: 0.1
+        }
+        bias_filler {
+            type: "constant"
+        }
+    }
+}
+
+layer {
+    name: "transFun"
+    type: "ReLU"
+    bottom: "input1"
+    top: "input1"
+}
+
+layer {
+    name: "input2"
+    type: "InnerProduct"
+    bottom: "input1"
+    top: "input2"
+    inner_product_param {
+        num_output: 20
+        weight_filler {
+            type: "xavier"
+            std: 0.1
+        }
+        bias_filler {
+            type: "constant"
+        }
+    }
+}
+
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "input2"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST
+  }
+}
+
+layer {
+    name: "losst"
+    type: "MultinomialLogisticLoss"
+    bottom: "input2"
+    bottom: "label"
+    top: "losst"
+    include {
+        phase: TEST
+    }
+}
+
+
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "input2"
+  bottom: "label"
+  top: "loss"
+}
